@@ -14,7 +14,10 @@ import com.streisky.miniautorizador.exception.CartaoInexistenteException;
 import com.streisky.miniautorizador.exception.SaldoInsuficienteException;
 import com.streisky.miniautorizador.exception.SenhaInvalidaException;
 import com.streisky.miniautorizador.model.Cartao;
+import com.streisky.miniautorizador.model.OperacaoCartao;
+import com.streisky.miniautorizador.model.Transacao;
 import com.streisky.miniautorizador.repository.CartaoRepository;
+import com.streisky.miniautorizador.repository.TransacaoRepository;
 
 import jakarta.validation.Valid;
 
@@ -24,31 +27,52 @@ public class TransacaoController {
 	
 	@Autowired
 	private CartaoRepository cartaoRepository;
-
+	
+	@Autowired
+	private TransacaoRepository transacaoRepository;
+	
 	@PostMapping
-	public ResponseEntity<String> realizarTransacao(@RequestBody @Valid TransacaoForm transacaoForm) {
+	public ResponseEntity<String> debitarCartao(@RequestBody @Valid TransacaoForm transacaoForm) {
+		return realizarTransacao(transacaoForm, OperacaoCartao.DEBITO);
+	}
+	
+	@PostMapping("/credito")
+	public ResponseEntity<String> creditarCartao(@RequestBody @Valid TransacaoForm transacaoForm) {
+		return realizarTransacao(transacaoForm, OperacaoCartao.CREDITO);
+	}
+	
+	private ResponseEntity<String> realizarTransacao(TransacaoForm transacaoForm, OperacaoCartao operacaoCartao) {
 		try {
-			Optional<Cartao> optional = cartaoRepository.findByNumeroCartao(transacaoForm.getNumeroCartao());
+			Cartao cartao = validarInformacoesCartao(transacaoForm);
 			
-			if (optional.isPresent()) {
-				Cartao cartao = optional.get();
-				
-				if (!verificarSenhaCartao(cartao, transacaoForm))
-					throw new SenhaInvalidaException();
-				
-				if (!verificarSaldoCartao(cartao, transacaoForm))
-					throw new SaldoInsuficienteException();
-				
-				descontarSaldo(cartao, transacaoForm);
-				cartaoRepository.save(cartao);
-				
-				return ResponseEntity.created(null).body("OK");
-			}
-			else
-				throw new CartaoInexistenteException();
+			Transacao transacao = new Transacao(cartao, operacaoCartao, transacaoForm.getValor());
+			transacaoRepository.save(transacao);
+			
+			atualizarSaldo(cartao, transacaoForm, operacaoCartao);
+			cartaoRepository.save(cartao);
+			
+			return ResponseEntity.created(null).body("OK");
 		} catch (CartaoInexistenteException | SenhaInvalidaException | SaldoInsuficienteException e) {
 			return ResponseEntity.unprocessableEntity().body(e.getMessage());
 		}
+	}
+	
+	private Cartao validarInformacoesCartao(TransacaoForm transacaoForm) throws CartaoInexistenteException, SenhaInvalidaException, SaldoInsuficienteException {
+		Optional<Cartao> optional = cartaoRepository.findByNumeroCartao(transacaoForm.getNumeroCartao());
+		
+		if (optional.isPresent()) {
+			Cartao cartao = optional.get();
+			
+			if (!verificarSenhaCartao(cartao, transacaoForm))
+				throw new SenhaInvalidaException();
+			
+			if (!verificarSaldoCartao(cartao, transacaoForm))
+				throw new SaldoInsuficienteException();
+			
+			return cartao;
+		}
+		
+		throw new CartaoInexistenteException();
 	}
 	
 	private boolean verificarSenhaCartao(Cartao cartao, TransacaoForm transacaoForm) {
@@ -59,7 +83,11 @@ public class TransacaoController {
 		return cartao.getSaldo() > transacaoForm.getValor();
 	}
 	
-	private void descontarSaldo(Cartao cartao, TransacaoForm transacaoForm) {
-		cartao.setSaldo(cartao.getSaldo() - transacaoForm.getValor());
+	private void atualizarSaldo(Cartao cartao, TransacaoForm transacaoForm, OperacaoCartao operacaoCartao) {
+		cartao.setSaldo(
+				(operacaoCartao.equals(OperacaoCartao.CREDITO)) 
+				? cartao.getSaldo() + transacaoForm.getValor()
+				: cartao.getSaldo() - transacaoForm.getValor()
+				);
 	}
 }
