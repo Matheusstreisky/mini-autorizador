@@ -19,7 +19,6 @@ public class CartaoForm {
 	private String senha;
 
 	public CartaoForm() {
-		super();
 	}
 
 	public CartaoForm(String numeroCartao, String senha) {
@@ -47,5 +46,4 @@ public class CartaoForm {
 	public Cartao toCartao() {
 		return new Cartao(numeroCartao, senha);
 	}
-
 }

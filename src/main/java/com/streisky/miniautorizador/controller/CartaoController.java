@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.streisky.miniautorizador.controller.form.CartaoForm;
+import com.streisky.miniautorizador.exception.CartaoInexistenteException;
 import com.streisky.miniautorizador.model.Cartao;
 import com.streisky.miniautorizador.repository.CartaoRepository;
 
@@ -42,11 +43,14 @@ public class CartaoController {
 	
 	@GetMapping("/{numeroCartao}")
 	public ResponseEntity<String> obterSaldoCartao(@PathVariable String numeroCartao) {
-		Optional<Cartao> optional = cartaoRepository.findByNumeroCartao(numeroCartao);
-		
-		return optional
-				.map(o -> ResponseEntity.ok().body(o.getSaldo().toString()))
-				.orElseGet(() -> ResponseEntity.notFound().build());
+		try {
+			Optional<Cartao> optional = cartaoRepository.findByNumeroCartao(numeroCartao);
+			
+			return optional
+					.map(o -> ResponseEntity.ok().body(o.getSaldo().toString()))
+					.orElseThrow(() -> new CartaoInexistenteException());
+		} catch (CartaoInexistenteException e) {
+			return ResponseEntity.notFound().build();
+		}
 	}
-
 }
