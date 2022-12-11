@@ -14,7 +14,10 @@ import com.streisky.miniautorizador.exception.CartaoInexistenteException;
 import com.streisky.miniautorizador.exception.SaldoInsuficienteException;
 import com.streisky.miniautorizador.exception.SenhaInvalidaException;
 import com.streisky.miniautorizador.model.Cartao;
+import com.streisky.miniautorizador.model.OperacaoCartao;
+import com.streisky.miniautorizador.model.Transacao;
 import com.streisky.miniautorizador.repository.CartaoRepository;
+import com.streisky.miniautorizador.repository.TransacaoRepository;
 
 import jakarta.validation.Valid;
 
@@ -24,6 +27,9 @@ public class TransacaoController {
 	
 	@Autowired
 	private CartaoRepository cartaoRepository;
+	
+	@Autowired
+	private TransacaoRepository transacaoRepository;
 
 	@PostMapping
 	public ResponseEntity<String> realizarTransacao(@RequestBody @Valid TransacaoForm transacaoForm) {
@@ -38,6 +44,9 @@ public class TransacaoController {
 				
 				if (!verificarSaldoCartao(cartao, transacaoForm))
 					throw new SaldoInsuficienteException();
+				
+				Transacao transacao = new Transacao(cartao, OperacaoCartao.DEBITO, transacaoForm.getValor());
+				transacaoRepository.save(transacao);
 				
 				descontarSaldo(cartao, transacaoForm);
 				cartaoRepository.save(cartao);
