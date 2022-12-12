@@ -1,5 +1,7 @@
 package com.streisky.miniautorizador.model;
 
+import java.util.Objects;
+
 import org.hibernate.annotations.Check;
 import org.hibernate.validator.constraints.Length;
 
@@ -62,5 +64,22 @@ public class Cartao {
 
 	public void setSaldo(Double saldo) {
 		this.saldo = saldo;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(numeroCartao);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Cartao other = (Cartao) obj;
+		return Objects.equals(numeroCartao, other.numeroCartao);
 	}
 }
