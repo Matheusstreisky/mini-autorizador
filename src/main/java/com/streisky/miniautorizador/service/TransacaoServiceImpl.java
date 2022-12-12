@@ -21,7 +21,7 @@ import com.streisky.miniautorizador.repository.TransacaoRepository;
 import jakarta.validation.Valid;
 
 @Service
-public class TransacaoService {
+public class TransacaoServiceImpl implements ITransacaoService {
 
 	@Autowired
 	private CartaoRepository cartaoRepository;
@@ -29,11 +29,13 @@ public class TransacaoService {
 	@Autowired
 	private TransacaoRepository transacaoRepository;
 	
+	@Override
 	public String debitarCartao(@RequestBody @Valid TransacaoForm transacaoForm)
 			throws CartaoInexistenteException, SenhaInvalidaException, SaldoInsuficienteException {
 		return realizarTransacao(transacaoForm, OperacaoCartao.DEBITO);
 	}
 	
+	@Override
 	public String creditarCartao(@RequestBody @Valid TransacaoForm transacaoForm)
 			throws CartaoInexistenteException, SenhaInvalidaException, SaldoInsuficienteException {
 		return realizarTransacao(transacaoForm, OperacaoCartao.CREDITO);

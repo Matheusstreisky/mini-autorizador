@@ -11,7 +11,7 @@ import com.streisky.miniautorizador.controller.form.TransacaoForm;
 import com.streisky.miniautorizador.exception.CartaoInexistenteException;
 import com.streisky.miniautorizador.exception.SaldoInsuficienteException;
 import com.streisky.miniautorizador.exception.SenhaInvalidaException;
-import com.streisky.miniautorizador.service.TransacaoService;
+import com.streisky.miniautorizador.service.TransacaoServiceImpl;
 
 import jakarta.validation.Valid;
 
@@ -20,7 +20,7 @@ import jakarta.validation.Valid;
 public class TransacaoController {
 	
 	@Autowired
-	private TransacaoService transacaoService;
+	private TransacaoServiceImpl transacaoService;
 	
 	@PostMapping
 	public ResponseEntity<String> debitarCartao(@RequestBody @Valid TransacaoForm transacaoForm) {
