@@ -15,7 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.streisky.miniautorizador.controller.form.CartaoForm;
 import com.streisky.miniautorizador.model.Cartao;
-import com.streisky.miniautorizador.service.CartaoService;
+import com.streisky.miniautorizador.service.ICartaoService;
 
 import jakarta.validation.Valid;
 
@@ -24,7 +24,7 @@ import jakarta.validation.Valid;
 public class CartaoController {
 	
 	@Autowired
-	private CartaoService cartaoService;
+	private ICartaoService cartaoService;
 	
 	@PostMapping
 	public ResponseEntity<CartaoForm> criarCartao(@RequestBody @Valid CartaoForm cartaoForm, UriComponentsBuilder uriBuilder) {

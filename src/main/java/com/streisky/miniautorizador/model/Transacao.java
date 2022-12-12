@@ -1,6 +1,7 @@
 package com.streisky.miniautorizador.model;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import org.hibernate.annotations.Check;
 
@@ -86,5 +87,23 @@ public class Transacao {
 
 	public void setValor(Double valor) {
 		this.valor = valor;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(Id, cartao, data, operacaoCartao, valor);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Transacao other = (Transacao) obj;
+		return Objects.equals(Id, other.Id) && Objects.equals(cartao, other.cartao)
+				&& operacaoCartao == other.operacaoCartao && Objects.equals(valor, other.valor);
 	}
 }
